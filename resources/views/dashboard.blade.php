@@ -82,7 +82,7 @@
         </div>
     </div>
 
-    <button type="button" class="chat-fab" aria-label="Open DiaCare assistant" x-data="{ open: false }" @click="open = !open" title="DiaCare assistant">
+    <button type="button" class="chat-fab" @click="$dispatch('open-assistant')" aria-label="Open DiaCare assistant" x-data="{ open: false }" @click="open = !open" title="DiaCare assistant">
         <span class="chat-dot"></span>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11.5a7.5 7.5 0 0 1-8 7.5 8.8 8.8 0 0 1-3.3-.63L4 20l1.64-3.62A7.4 7.4 0 0 1 4.5 12 7.5 7.5 0 0 1 12 4.5h.5A7.5 7.5 0 0 1 20 11.5Z"/><path d="M9 12h.01M12 12h.01M15 12h.01"/></svg>
     </button>
