@@ -22,6 +22,15 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'glucose_target_min',
+        'glucose_target_max',
+        'height_cm',
+        'weight_kg',
+        'emergency_contact_name',
+        'emergency_contact_phone',
+        'doctor_name',
+        'medical_notes',
+        'health_goals',
     ];
 
     /**
@@ -44,6 +53,8 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'height_cm' => 'decimal:2',
+            'weight_kg' => 'decimal:2',
         ];
     }
 }
