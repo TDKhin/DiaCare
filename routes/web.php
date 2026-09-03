@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ChatbotController;
+use App\Http\Controllers\GlucoseReadingController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\MealPhotoController;
 use App\Http\Controllers\ProfileController;
@@ -13,6 +14,8 @@ Route::get('/', function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [HealthController::class, 'dashboard'])->name('dashboard');
     Route::get('/glucose', [HealthController::class, 'glucose'])->name('glucose');
+    Route::post('/glucose', [GlucoseReadingController::class, 'store'])->name('glucose.store');
+    Route::delete('/glucose/{glucoseReading}', [GlucoseReadingController::class, 'destroy'])->name('glucose.destroy');
     Route::get('/meals', [HealthController::class, 'meals'])->name('meals');
     Route::get('/activity', [HealthController::class, 'activity'])->name('activity');
     Route::get('/meal-photo', [HealthController::class, 'mealPhoto'])->name('meal-photo');

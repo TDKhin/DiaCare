@@ -36,10 +36,11 @@ return [
     ],
 
     'ai' => [
+        'provider' => env('AI_PROVIDER', 'gemini'),
         'base_url' => env('AI_API_BASE_URL', 'https://api.openai.com/v1'),
-        'key' => env('AI_API_KEY'),
-        'vision_model' => env('AI_VISION_MODEL', 'gpt-4o-mini'),
-        'chat_model' => env('AI_CHAT_MODEL', 'gpt-5-mini'),
+        'key' => env('VISION_API_KEY', env('AI_API_KEY')),
+        'vision_model' => env('VISION_MODEL', env('AI_VISION_MODEL', 'gemini-3.6-flash')),
+        'chat_model' => env('CHAT_MODEL', env('AI_CHAT_MODEL', env('VISION_MODEL', 'gemini-3.6-flash'))),
     ],
 
 ];

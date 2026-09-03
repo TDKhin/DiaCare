@@ -17,13 +17,13 @@
         <div class="summary-grid">
             <div class="card summary-card">
                 <div class="summary-card-top"><span class="summary-label">Latest glucose</span><span class="summary-icon blue"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3S6 9.2 6 14a6 6 0 0 0 12 0c0-4.8-6-11-6-11Z"/></svg></span></div>
-                <div class="summary-value">{{ $latestReading }} <small>mg/dL</small></div>
-                <div class="summary-meta warning">Slightly above target</div>
+                <div class="summary-value">{{ $latestReading ?? '—' }} @if($latestReading)<small>mg/dL</small>@endif</div>
+                <div class="summary-meta {{ $latestReading ? 'warning' : '' }}">{{ $latestReading ? 'Log another reading to track your trend' : 'No readings logged yet' }}</div>
             </div>
             <div class="card summary-card">
                 <div class="summary-card-top"><span class="summary-label">7-day average</span><span class="summary-icon green"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m4 14 5-5 4 4 7-7"/><path d="M15 6h5v5"/></svg></span></div>
-                <div class="summary-value">{{ $averageReading }} <small>mg/dL</small></div>
-                <div class="summary-meta good">10% lower than last week</div>
+                <div class="summary-value">{{ $averageReading ?? '—' }} @if($averageReading)<small>mg/dL</small>@endif</div>
+                <div class="summary-meta {{ $averageReading ? 'good' : '' }}">{{ $averageReading ? 'Based on your last 7 days' : 'Add readings to calculate' }}</div>
             </div>
             <div class="card summary-card">
                 <div class="summary-card-top"><span class="summary-label">BMI</span><span class="summary-icon purple"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20V10M12 20V4M19 20v-7"/></svg></span></div>
@@ -51,9 +51,11 @@
             <section class="card medication-card">
                 <div class="list-header"><div><div class="card-title">Today's medication</div><div class="card-subtitle" style="margin-top: 4px;">Stay on schedule with your care plan.</div></div><a href="{{ route('medications') }}" class="text-[10px] font-bold text-blue-500 no-underline">View all</a></div>
                 <div class="medication-list">
-                    @foreach ($medications as $medication)
+                    @forelse ($medications as $medication)
                         <div class="medication-row"><span class="medication-pill"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 13h6"/></svg></span><span><span class="medication-name block">{{ $medication['name'] }}</span><span class="medication-dose block">{{ $medication['dose'] }}</span></span><span class="medication-time">{{ $medication['time'] }}</span></div>
-                    @endforeach
+                    @empty
+                        <div class="empty-state" style="min-height:118px;"><span class="empty-state-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 13h6"/></svg></span><h3>No medications added</h3><p>Add your care-plan medications when ready.</p></div>
+                    @endforelse
                 </div>
             </section>
         </div>
@@ -61,16 +63,21 @@
         <div class="section-grid">
             <section class="card chart-card">
                 <div class="chart-card-header"><div><div class="card-title">Glucose trend</div><div class="card-subtitle" style="margin-top: 4px;">Your readings over the last 7 days.</div></div><a href="{{ route('glucose') }}" class="text-[10px] font-bold text-blue-500 no-underline">View details</a></div>
+                @if ($glucosePoints->isEmpty())
+                    <div class="empty-state" style="min-height:214px;"><span class="empty-state-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17 9 12l4 3 7-8"/><path d="M15 7h5v5"/></svg></span><h3>No glucose trend yet</h3><p>Log your first reading to see your personal chart.</p></div>
+                @else
                 <div class="chart-wrap">
                     <svg viewBox="0 0 760 190" preserveAspectRatio="none" role="img" aria-label="Glucose trend line chart">
                         <defs><linearGradient id="glucoseArea" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#3b82f6" stop-opacity=".14"/><stop offset="1" stop-color="#3b82f6" stop-opacity="0"/></linearGradient></defs>
                         <g stroke="#edf2f7" stroke-width="1"><line x1="0" y1="32" x2="760" y2="32"/><line x1="0" y1="78" x2="760" y2="78"/><line x1="0" y1="124" x2="760" y2="124"/><line x1="0" y1="170" x2="760" y2="170"/></g>
-                        <path d="M0 115 C24 108 28 148 53 145 S78 80 103 91 S126 122 154 121 S181 154 204 152 S226 138 249 98 S282 80 302 98 S327 135 350 121 S375 112 396 94 S419 122 440 104 S469 78 493 91 S518 81 539 72 S567 97 586 106 S614 159 636 167 S658 96 680 104 S700 145 723 132 S742 143 760 135 L760 190 L0 190Z" fill="url(#glucoseArea)"/>
-                        <path d="M0 115 C24 108 28 148 53 145 S78 80 103 91 S126 122 154 121 S181 154 204 152 S226 138 249 98 S282 80 302 98 S327 135 350 121 S375 112 396 94 S419 122 440 104 S469 78 493 91 S518 81 539 72 S567 97 586 106 S614 159 636 167 S658 96 680 104 S700 145 723 132 S742 143 760 135" fill="none" stroke="#367fe1" stroke-width="3" stroke-linecap="round"/>
-                        <g fill="#fff" stroke="#367fe1" stroke-width="2"><circle cx="0" cy="115" r="4"/><circle cx="103" cy="91" r="4"/><circle cx="204" cy="152" r="4"/><circle cx="302" cy="98" r="4"/><circle cx="396" cy="94" r="4"/><circle cx="493" cy="91" r="4"/><circle cx="586" cy="106" r="4"/><circle cx="636" cy="167" r="4"/><circle cx="680" cy="104" r="4"/><circle cx="760" cy="135" r="4"/></g>
+                        @php($areaPath = $chartPath.' L760 190 L0 190Z')
+                        <path d="{{ $areaPath }}" fill="url(#glucoseArea)"/>
+                        <path d="{{ $chartPath }}" fill="none" stroke="#367fe1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                        <g fill="#fff" stroke="#367fe1" stroke-width="2">@foreach($chartCoordinates as $point)<circle cx="{{ $point['x'] }}" cy="{{ $point['y'] }}" r="4"/>@endforeach</g>
                     </svg>
-                    <div class="chart-labels"><span>Aug 28</span><span>Aug 29</span><span>Aug 30</span><span>Aug 31</span><span>Sep 01</span><span>Sep 02</span><span>Sep 03</span></div>
+                    <div class="chart-labels"><span>{{ optional($glucosePoints->first()?->recorded_at)->format('M d') }}</span><span>{{ optional($glucosePoints->last()?->recorded_at)->format('M d') }}</span></div>
                 </div>
+                @endif
             </section>
             <section class="card content-card">
                 <div class="list-header"><div><div class="card-title">Care reminders</div><div class="card-subtitle" style="margin-top: 4px;">A few things to keep in mind.</div></div><a href="{{ route('alerts') }}" class="text-[10px] font-bold text-blue-500 no-underline">See all</a></div>

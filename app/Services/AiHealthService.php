@@ -10,60 +10,41 @@ class AiHealthService
 {
     public function analyzeMeal(UploadedFile $photo): array
     {
-        $baseUrl = rtrim(config('services.ai.base_url'), '/');
-        $apiKey = config('services.ai.key');
-        $model = config('services.ai.vision_model', 'gpt-4o-mini');
+        $key = config('services.ai.key');
+        $model = config('services.ai.vision_model', 'gemini-3.6-flash');
+        $provider = config('services.ai.provider', 'gemini');
 
-        if (! $baseUrl || ! $apiKey) {
-            throw new RuntimeException('AI analysis is not configured. Add AI_API_BASE_URL and AI_API_KEY to your .env file.');
+        if (! $key) {
+            throw new RuntimeException('AI analysis is not configured. Add VISION_API_KEY to your .env file.');
         }
 
-        $dataUrl = 'data/'.$photo->getMimeType().';base64,'.base64_encode((string) file_get_contents($photo->getRealPath()));
-
-        $response = Http::withToken($apiKey)->acceptJson()->timeout(60)->post($baseUrl.'/chat/completions', [
-            'model' => $model,
-            'temperature' => 0.2,
-            'response_format' => [
-                'type' => 'json_schema',
-                'json_schema' => [
-                    'name' => 'meal_analysis',
-                    'strict' => true,
-                    'schema' => [
-                        'type' => 'object',
-                        'properties' => [
-                            'meal_name' => ['type' => 'string'],
-                            'confidence' => ['type' => 'number'],
-                            'calories' => ['type' => 'integer'],
-                            'carbohydrates_g' => ['type' => 'number'],
-                            'protein_g' => ['type' => 'number'],
-                            'fat_g' => ['type' => 'number'],
-                            'fiber_g' => ['type' => 'number'],
-                            'ingredients' => ['type' => 'array', 'items' => ['type' => 'string']],
-                            'advice' => ['type' => 'string'],
-                        ],
-                        'required' => ['meal_name', 'confidence', 'calories', 'carbohydrates_g', 'protein_g', 'fat_g', 'fiber_g', 'ingredients', 'advice'],
-                        'additionalProperties' => false,
-                    ],
-                ],
+        $prompt = 'Analyze this meal photo for general nutrition tracking. Return JSON only with meal_name (string), confidence (number from 0 to 1), calories (integer), carbohydrates_g (number), protein_g (number), fat_g (number), fiber_g (number), ingredients (array of strings), and advice (string). Estimate values conservatively, say that this is not medical advice, and do not diagnose or recommend medication changes.';
+        $mime = $photo->getMimeType() ?: 'image/jpeg';
+        $contents = [[
+            'role' => 'user',
+            'parts' => [
+                ['text' => $prompt],
+                ['inline_data' => ['mime_type' => $mime, 'data' => base64_encode((string) file_get_contents($photo->getRealPath()))]],
             ],
-            'messages' => [[
+        ]];
+
+        $payload = $provider === 'gemini'
+            ? $this->geminiRequest($key, $model, $contents, ['responseMimeType' => 'application/json', 'temperature' => 0.2])
+            : $this->openAiRequest($key, config('services.ai.base_url'), $model, [[
                 'role' => 'user',
                 'content' => [
-                    ['type' => 'text', 'text' => 'Analyze this meal photo for general nutrition tracking. Return estimated values only, clearly state that this is not medical advice, and do not diagnose or recommend medication changes.'],
-                    ['type' => 'image_url', 'image_url' => ['url' => $dataUrl, 'detail' => 'auto']],
+                    ['type' => 'text', 'text' => $prompt],
+                    ['type' => 'image_url', 'image_url' => ['url' => 'data/'.$mime.';base64,'.base64_encode((string) file_get_contents($photo->getRealPath())), 'detail' => 'auto']],
                 ],
-            ]],
-        ]);
+            ]]);
 
-        if ($response->failed()) {
-            throw new RuntimeException('The AI provider could not analyze this image.');
-        }
-
-        $content = data_get($response->json(), 'choices.0.message.content');
-        $analysis = json_decode((string) $content, true);
+        $content = $provider === 'gemini'
+            ? data_get($payload, 'candidates.0.content.parts.0.text')
+            : data_get($payload, 'choices.0.message.content');
+        $analysis = json_decode($this->cleanJson((string) $content), true);
 
         if (! is_array($analysis)) {
-            throw new RuntimeException('The AI provider returned an invalid analysis.');
+            throw new RuntimeException('The AI provider returned an invalid meal analysis.');
         }
 
         return $analysis;
@@ -71,26 +52,52 @@ class AiHealthService
 
     public function chat(array $messages): string
     {
-        $baseUrl = rtrim(config('services.ai.base_url'), '/');
-        $apiKey = config('services.ai.key');
-        $model = config('services.ai.chat_model', 'gpt-5-mini');
+        $key = config('services.ai.key');
+        $model = config('services.ai.chat_model', 'gemini-3.6-flash');
+        $provider = config('services.ai.provider', 'gemini');
 
-        if (! $baseUrl || ! $apiKey) {
-            throw new RuntimeException('AI chat is not configured. Add AI_API_BASE_URL and AI_API_KEY to your .env file.');
+        if (! $key) {
+            throw new RuntimeException('AI chat is not configured. Add VISION_API_KEY to your .env file.');
         }
 
-        $response = Http::withToken($apiKey)->acceptJson()->timeout(45)->post($baseUrl.'/chat/completions', [
-            'model' => $model,
-            'temperature' => 0.4,
-            'messages' => array_merge([
-                ['role' => 'system', 'content' => 'You are DiaCare Assistant. Give calm, concise wellness-tracking guidance. Do not diagnose, prescribe, interpret emergencies, or recommend changing medication. Encourage the user to contact a qualified clinician for medical decisions and emergency services for urgent symptoms.'],
-            ], $messages),
-        ]);
+        $system = 'You are DiaCare Assistant. Answer diabetes-health information questions in calm, plain language for general education and wellness tracking. Never diagnose, prescribe, interpret emergencies, or recommend changing medication. Encourage a qualified clinician for medical decisions and emergency services for urgent symptoms. Clearly distinguish general information from personal medical advice.';
 
-        if ($response->failed()) {
-            throw new RuntimeException('The AI provider could not answer right now.');
+        if ($provider === 'gemini') {
+            $contents = array_map(fn (array $message) => [
+                'role' => $message['role'] === 'assistant' ? 'model' : 'user',
+                'parts' => [['text' => $message['content']]],
+            ], $messages);
+            $payload = $this->geminiRequest($key, $model, $contents, ['temperature' => 0.4], $system);
+            return trim((string) data_get($payload, 'candidates.0.content.parts.0.text'));
         }
 
-        return trim((string) data_get($response->json(), 'choices.0.message.content'));
+        $payload = $this->openAiRequest($key, config('services.ai.base_url'), $model, array_merge([
+            ['role' => 'system', 'content' => $system],
+        ], $messages));
+
+        return trim((string) data_get($payload, 'choices.0.message.content'));
+    }
+
+    private function geminiRequest(string $key, string $model, array $contents, array $generationConfig = [], ?string $system = null): array
+    {
+        $body = ['contents' => $contents];
+        if ($generationConfig) $body['generationConfig'] = $generationConfig;
+        if ($system) $body['systemInstruction'] = ['parts' => [['text' => $system]]];
+
+        $response = Http::acceptJson()->timeout(60)->post('https://generativelanguage.googleapis.com/v1beta/models/'.rawurlencode($model).':generateContent?key='.urlencode($key), $body);
+        if ($response->failed()) throw new RuntimeException('Gemini could not complete the request. Check VISION_API_KEY and the selected model.');
+        return $response->json();
+    }
+
+    private function openAiRequest(string $key, ?string $baseUrl, string $model, array $messages): array
+    {
+        $response = Http::withToken($key)->acceptJson()->timeout(60)->post(rtrim((string) $baseUrl, '/').'/chat/completions', ['model' => $model, 'messages' => $messages]);
+        if ($response->failed()) throw new RuntimeException('The AI provider could not complete the request.');
+        return $response->json();
+    }
+
+    private function cleanJson(string $content): string
+    {
+        return preg_replace('/^```(?:json)?\s*|\s*```$/i', '', trim($content)) ?: trim($content);
     }
 }

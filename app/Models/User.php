@@ -49,6 +49,11 @@ class User extends Authenticatable
      *
      * @return array<string, string>
      */
+    public function glucoseReadings(): HasMany
+    {
+        return $this->hasMany(GlucoseReading::class);
+    }
+
     public function mealPhotos(): HasMany
     {
         return $this->hasMany(MealPhoto::class);
