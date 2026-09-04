@@ -85,7 +85,10 @@ class AiHealthService
         if ($system) $body['systemInstruction'] = ['parts' => [['text' => $system]]];
 
         $response = Http::acceptJson()->timeout(60)->post('https://generativelanguage.googleapis.com/v1beta/models/'.rawurlencode($model).':generateContent?key='.urlencode($key), $body);
-        if ($response->failed()) throw new RuntimeException('Gemini could not complete the request. Check VISION_API_KEY and the selected model.');
+        if ($response->failed()) {
+            $providerMessage = $response->json('error.message');
+            throw new RuntimeException('Gemini request failed (HTTP '.$response->status().'): '.($providerMessage ?: 'Check VISION_API_KEY, billing, permissions, and the selected model.'));
+        }
         return $response->json();
     }
 
