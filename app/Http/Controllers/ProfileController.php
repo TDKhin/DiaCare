@@ -26,7 +26,16 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $validated = $request->validated();
+        $diabetesType = $validated['diabetes_type'] ?? null;
+
+        if ($diabetesType) {
+            $range = config('glucose.time_slots.fasting');
+            $validated['glucose_target_min'] = $range['min'];
+            $validated['glucose_target_max'] = $range['max'];
+        }
+
+        $request->user()->fill($validated);
 
         if ($request->user()->isDirty('email')) {
             $request->user()->email_verified_at = null;

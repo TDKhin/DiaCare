@@ -1,0 +1,121 @@
+@startuml DiaCareUseCaseClear
+left to right direction
+scale 1.35
+skinparam dpi 160
+skinparam shadowing false
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam actorStyle stickman
+skinparam nodesep 35
+skinparam ranksep 45
+skinparam ArrowColor #52606D
+skinparam ActorBorderColor #334E68
+skinparam ActorFontColor #172B4D
+skinparam ActorFontSize 14
+skinparam UsecaseBorderColor #7B8794
+skinparam UsecaseBackgroundColor #FFFDE7
+skinparam UsecaseFontColor #172B4D
+skinparam UsecaseFontSize 12
+skinparam RectangleBorderColor #486581
+skinparam RectangleBackgroundColor #F8FBFF
+skinparam RectangleFontColor #172B4D
+skinparam RectangleFontSize 15
+
+actor Guest as G
+actor "Registered User" as U
+actor Administrator as A
+actor "Groq AI Provider" as AI
+
+rectangle "DiaCare Health Management System" {
+  package "Access & Public Learning" #EEF5FF {
+    usecase "Register account" as Register
+    usecase "Login / logout" as Login
+    usecase "Browse health education" as Learn
+    usecase "Take health quiz" as Quiz
+  }
+
+  package "Registered User Features" #F0FBF6 {
+    usecase "View personal dashboard" as Dashboard
+    usecase "Track glucose readings" as Glucose
+    usecase "View glucose trend" as Trend
+    usecase "Receive glucose alerts" as UserAlerts
+    usecase "Analyze meal photo" as MealPhoto
+    usecase "View nutrition result" as Nutrition
+    usecase "Enter pre-meal glucose" as BeforeMeal
+    usecase "Estimate after-meal glucose" as AfterMeal
+    usecase "Save meal & glucose data" as SaveMeal
+    usecase "Manage exercise" as Exercise
+    usecase "Manage medications" as Medications
+    usecase "View health reports" as Reports
+    usecase "Use AI chatbot" as Chat
+    usecase "View / clear chat history" as ChatHistory
+    usecase "Manage personal profile" as Profile
+  }
+
+  package "Administrator Features" #FFF5E8 {
+    usecase "View admin dashboard" as AdminDashboard
+    usecase "Search and filter users" as SearchUsers
+    usecase "Promote User to Admin" as Promote
+    usecase "Protect existing Admin roles" as Protect
+    usecase "Manage food & nutrition" as AdminNutrition
+    usecase "Manage exercise & medication" as AdminExercise
+    usecase "Manage system reports" as AdminReports
+    usecase "Manage out-of-range alerts" as AdminAlerts
+  }
+
+  package "AI Services" #F5F0FF {
+    usecase "Generate nutrition estimate" as GenNutrition
+    usecase "Generate chatbot response" as GenChat
+  }
+}
+
+G --> Register
+G --> Login
+G --> Learn
+G --> Quiz
+
+U --> Login
+U --> Dashboard
+U --> Glucose
+U --> MealPhoto
+U --> Exercise
+U --> Medications
+U --> Reports
+U --> Chat
+U --> Profile
+
+A --> Login
+A --> AdminDashboard
+A --> SearchUsers
+A --> AdminNutrition
+A --> AdminExercise
+A --> AdminReports
+A --> AdminAlerts
+
+AI --> GenNutrition
+AI --> GenChat
+
+Glucose .> Trend : <<include>>
+Glucose .> UserAlerts : <<include>>
+MealPhoto .> GenNutrition : <<include>>
+MealPhoto .> Nutrition : <<include>>
+MealPhoto .> SaveMeal : <<extend>>
+SaveMeal .> BeforeMeal : <<include>>
+SaveMeal .> AfterMeal : <<include>>
+AfterMeal .> Nutrition : <<include>>
+Chat .> GenChat : <<include>>
+ChatHistory .> Chat : <<extend>>
+SearchUsers .> Promote : <<extend>>
+Protect .> Promote : <<include>>
+
+note right of Protect
+Existing Admin accounts are protected.
+Only normal Users can be promoted.
+Admin cannot downgrade Admin to User.
+end note
+
+note bottom of AfterMeal
+Estimated glucose only.
+Not a measured reading or medical advice.
+end note
+@enduml

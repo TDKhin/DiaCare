@@ -1,29 +1,11 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Profile') }}
-        </h2>
-    </x-slot>
-
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-            <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    @include('profile.partials.update-profile-information-form')
-                </div>
-            </div>
-
-            <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    @include('profile.partials.update-password-form')
-                </div>
-            </div>
-
-            <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    @include('profile.partials.delete-user-form')
-                </div>
-            </div>
-        </div>
+    @php($diabetesTypes = config('glucose.profiles'))
+    <div class="page-container" x-data="{ editing: {{ $user->diabetes_type ? 'false' : 'true' }} }">
+        <div class="page-heading"><div><p class="eyebrow">Account</p><h1>Profile</h1><p>Set your diabetes type once so DiaCare can apply its built-in glucose range.</p></div><a href="{{ route('dashboard') }}" class="secondary-button">Back to dashboard</a></div>
+        @if (session('status') === 'profile-updated')<div class="alert-success">Your profile has been updated successfully.</div>@endif
+        @if (session('status') === 'profile-setup')<div class="alert-success">Choose your diagnosed diabetes type to finish setting up DiaCare.</div>@endif
+        @if ($errors->any())<div class="alert-success" style="border-color:#f2c4c0;background:#fff6f5;color:#bf554e;">Please check the highlighted fields and try again.</div>@endif
+        <section x-show="!editing" class="card content-card" style="margin-top:0;"><div class="profile-identity"><span class="profile-avatar">{{ collect(explode(' ', trim($user->name)))->filter()->map(fn ($part) => strtoupper(substr($part, 0, 1)))->take(2)->implode('') ?: 'DC' }}</span><div><div class="profile-name">{{ $user->name }}</div><div class="profile-email">{{ $user->email }}</div></div><button type="button" class="primary-button" style="margin-left:auto;" @click="editing=true">Edit profile</button></div><div class="nutrition-grid" style="margin-top:20px;grid-template-columns:repeat(5,minmax(0,1fr));"><div class="nutrition-stat"><div class="nutrition-stat-label">Diabetes type</div><div class="nutrition-stat-value" style="font-size:15px;">{{ $diabetesTypes[$user->diabetes_type]['label'] ?? 'Not selected' }}</div></div><div class="nutrition-stat"><div class="nutrition-stat-label">Glucose range</div><div class="nutrition-stat-value" style="font-size:15px;">{{ $user->glucose_target_min && $user->glucose_target_max ? $user->glucose_target_min.'–'.$user->glucose_target_max.' mg/dL' : 'Set with care team' }}</div></div><div class="nutrition-stat"><div class="nutrition-stat-label">Gender</div><div class="nutrition-stat-value" style="font-size:15px;text-transform:capitalize;">{{ $user->gender ?: '—' }}</div></div><div class="nutrition-stat"><div class="nutrition-stat-label">Height</div><div class="nutrition-stat-value" style="font-size:15px;">{{ $user->height_cm ?: '—' }} <span>cm</span></div></div><div class="nutrition-stat"><div class="nutrition-stat-label">BMI</div><div class="nutrition-stat-value" style="font-size:15px;">{{ $user->height_cm && $user->weight_kg ? number_format($user->weight_kg / (($user->height_cm / 100) ** 2), 1) : '—' }}</div></div></div></section>
+        <section x-show="editing" x-cloak class="card content-card" style="margin-top:0;"><div class="card-title">Set up your profile</div><form method="POST" action="{{ route('profile.update') }}" class="profile-form" style="margin-top:18px;">@csrf @method('PATCH')<div class="form-field"><label for="name">Full name</label><input id="name" name="name" type="text" value="{{ old('name', $user->name) }}" required></div><div class="form-field"><label for="email">Email address</label><input id="email" name="email" type="email" value="{{ old('email', $user->email) }}" required></div><div class="form-field"><label for="diabetes_type">Diabetes type</label><select id="diabetes_type" name="diabetes_type"><option value="">Choose your diabetes type</option>@foreach($diabetesTypes as $key => $type)<option value="{{ $key }}" @selected(old('diabetes_type', $user->diabetes_type) === $key)>{{ $type['label'] }}</option>@endforeach</select><p class="form-help" style="margin-top:7px;">Choose the type already diagnosed by your healthcare professional. DiaCare automatically sets the glucose range for Type 1 and Type 2; it does not use a custom range.</p></div><div class="form-field"><label for="gender">Gender</label><select id="gender" name="gender"><option value="">Choose gender</option><option value="male" @selected(old('gender', $user->gender) === 'male')>Male</option><option value="female" @selected(old('gender', $user->gender) === 'female')>Female</option></select></div><div class="form-field"><label for="height_cm">Height (cm)</label><input id="height_cm" name="height_cm" type="number" step="0.01" min="50" max="250" value="{{ old('height_cm', $user->height_cm) }}"></div><div class="form-field"><label for="weight_kg">Weight (kg)</label><input id="weight_kg" name="weight_kg" type="number" step="0.01" min="2" max="500" value="{{ old('weight_kg', $user->weight_kg) }}"></div><div class="form-actions"><button type="button" class="secondary-button" @click="editing=false">Cancel</button><button type="submit" class="primary-button">Save profile</button></div></form></section>
     </div>
 </x-app-layout>

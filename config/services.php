@@ -35,4 +35,22 @@ return [
         ],
     ],
 
+    'ai' => [
+        // Separate credentials let the text assistant and photo analysis use
+        // different providers, quotas, and models. The legacy values remain
+        // as fallbacks so existing installations continue to work.
+        'text' => [
+            'provider' => env('AI_TEXT_PROVIDER') ?: env('AI_PROVIDER', 'gemini'),
+            'base_url' => env('AI_TEXT_BASE_URL') ?: env('AI_API_BASE_URL', 'https://api.openai.com/v1'),
+            'key' => env('GROQ_TEXT_API_KEY') ?: env('AI_TEXT_API_KEY') ?: env('CHAT_API_KEY') ?: env('GEMINI_CHAT_API_KEY') ?: env('GEMINI_API_KEY') ?: env('AI_API_KEY') ?: env('GOOGLE_API_KEY'),
+            'model' => env('AI_TEXT_MODEL') ?: env('CHAT_MODEL') ?: env('GEMINI_CHAT_MODEL') ?: env('GEMINI_MODEL', 'gemini-2.5-flash'),
+        ],
+        'vision' => [
+            'provider' => env('AI_VISION_PROVIDER') ?: env('AI_PROVIDER', 'gemini'),
+            'base_url' => env('AI_VISION_BASE_URL') ?: env('AI_API_BASE_URL', 'https://api.openai.com/v1'),
+            'key' => env('GROQ_VISION_API_KEY') ?: env('AI_VISION_API_KEY') ?: env('VISION_API_KEY') ?: env('GEMINI_API_KEY') ?: env('AI_API_KEY') ?: env('GOOGLE_API_KEY'),
+            'model' => env('AI_VISION_MODEL') ?: env('VISION_MODEL') ?: env('GEMINI_MODEL', 'gemini-2.5-flash'),
+        ],
+    ],
+
 ];
