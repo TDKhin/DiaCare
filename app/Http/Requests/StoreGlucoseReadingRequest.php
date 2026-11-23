@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreGlucoseReadingRequest extends FormRequest
 {
@@ -12,9 +13,9 @@ class StoreGlucoseReadingRequest extends FormRequest
     {
         return [
             'value' => ['required', 'integer', 'between:20,600'],
-            'context' => ['nullable', 'string', 'max:60'],
-            'recorded_at' => ['nullable', 'date'],
+            'context' => ['required', Rule::in(collect(config('glucose.time_slots'))->pluck('label')->all())],
             'notes' => ['nullable', 'string', 'max:1000'],
+            'activity_log_id' => ['nullable', 'integer', 'exists:activity_logs,id'],
         ];
     }
 }

@@ -1,65 +1,12 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-
-        <title>DiaCare</title>
-
-        <x-theme-script />
-
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600&display=swap" rel="stylesheet" />
-
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-    </head>
-    <body class="min-h-screen bg-gray-50 font-sans text-gray-900 antialiased dark:bg-gray-950 dark:text-gray-100">
-        <header class="border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
-            <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
-                <a href="{{ url('/') }}" class="text-xl font-semibold tracking-tight">DiaCare</a>
-
-                <nav class="flex items-center gap-2 sm:gap-3">
-                    <x-theme-toggle />
-
-                    @auth
-                        <a href="{{ route('dashboard') }}" class="rounded-md border border-gray-300 px-4 py-1.5 text-sm font-medium hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800">
-                            {{ __('Dashboard') }}
-                        </a>
-                    @else
-                        <a href="{{ route('login') }}" class="rounded-md px-4 py-1.5 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800">
-                            {{ __('Log in') }}
-                        </a>
-                        <a href="{{ route('register') }}" class="rounded-md bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-indigo-500">
-                            {{ __('Register') }}
-                        </a>
-                    @endauth
-                </nav>
-            </div>
-        </header>
-
-        <main class="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
-            <div class="max-w-2xl">
-                <p class="text-sm font-medium uppercase tracking-wide text-indigo-600 dark:text-indigo-400">Diabetes care, simplified</p>
-                <h1 class="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">Welcome to DiaCare</h1>
-                <p class="mt-4 text-lg text-gray-600 dark:text-gray-300">
-                    Create an account or sign in to open your dashboard. Health tracking features will be added in a later step.
-                </p>
-
-                <div class="mt-8 flex flex-wrap gap-3">
-                    @auth
-                        <a href="{{ route('dashboard') }}" class="rounded-md bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500">
-                            {{ __('Go to dashboard') }}
-                        </a>
-                    @else
-                        <a href="{{ route('register') }}" class="rounded-md bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500">
-                            {{ __('Get started') }}
-                        </a>
-                        <a href="{{ route('login') }}" class="rounded-md border border-gray-300 px-5 py-2.5 text-sm font-semibold hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800">
-                            {{ __('Log in') }}
-                        </a>
-                    @endauth
-                </div>
-            </div>
-        </main>
-    </body>
-</html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>DiaCare — Your everyday diabetes companion</title><x-theme-script /><link rel="preconnect" href="https://fonts.bunny.net"><link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700,800&display=swap" rel="stylesheet" />@vite(['resources/css/app.css', 'resources/js/app.js'])</head>
+<body class="landing-page">
+<header class="landing-nav"><a href="{{ url('/') }}" class="landing-brand"><span class="brand-mark brand-logo"><svg viewBox="0 0 36 36" aria-hidden="true"><path d="M18 3.5 29 8v8.5c0 7.2-4.7 12.9-11 16-6.3-3.1-11-8.8-11-16V8l11-4.5Z"/><path d="m11.5 18 4 4 9-9"/></svg></span><span>DiaCare</span></a><nav><a href="{{ route('welcome') }}">Home</a><a href="{{ route('welcome') }}#about">About</a><a href="{{ route('assistant') }}">AI Chatbot</a><a href="{{ route('knowledge') }}">Knowledge Sharing</a><a href="{{ route('quiz') }}">Quiz</a><x-theme-toggle /><a class="landing-link" href="{{ route('login') }}">Login</a><a class="landing-cta" href="{{ route('register') }}">Sign up</a></nav></header>
+<main>
+<section class="landing-hero"><div class="hero-glow"></div><div class="hero-copy"><span class="landing-kicker">A clearer way to care every day</span><h1>Understand your health.<br><em>Feel more in control.</em></h1><p>DiaCare brings glucose tracking, meal insights, activity, medication schedules, and a gentle AI assistant into one private wellness companion.</p><div class="hero-actions"><a class="landing-cta landing-cta-large" href="{{ route('register') }}">Create your free account <span>→</span></a><a class="landing-outline" href="{{ route('login') }}">Already have an account?</a></div><p class="hero-note">Start with your name and email, then build your personal health record at your own pace.</p></div><div class="hero-dashboard hero-visual"><img src="{{ asset('images/diacare-diabetes-hero.png') }}" alt="Diabetes self-care scene with a glucose meter, health notebook, and balanced meal" class="hero-visual-image"><div class="hero-visual-badge hero-visual-badge-one"><span class="float-icon">◌</span><div><strong>Track patterns</strong><small>Readings, meals, and activity</small></div></div><div class="hero-visual-badge hero-visual-badge-two"><span class="float-icon purple">✦</span><div><strong>Learn with clarity</strong><small>Simple diabetes education</small></div></div></div></section>
+<section id="features" class="landing-section"><div class="section-intro"><div><span class="landing-kicker">One calm workspace</span><h2>Tools that fit<br>your routine.</h2></div></div><div class="feature-grid"><article class="feature-card feature-card-blue"><div class="feature-icon">⌁</div><span>01 · Glucose</span><h3>See your current trend</h3><p>Add readings and connect saved meal glucose levels into one daily trend across 3 days, 5 days, 7 days, or one month.</p><a href="{{ route('register') }}">Start tracking <b>↗</b></a></article><article class="feature-card feature-card-lime"><div class="feature-icon">▧</div><span>02 · Nutrition</span><h3>Understand your meals</h3><p>Analyze a meal photo, review energy and nutrients, then choose whether to save the result into your diet history.</p><a href="{{ route('register') }}">Explore meals <b>↗</b></a></article><article class="feature-card feature-card-lilac"><div class="feature-icon">✦</div><span>03 · Wellness</span><h3>Keep care in one place</h3><p>Track activity, medication schedules, profile targets, BMI, reminders, and plain-language health questions.</p><a href="{{ route('register') }}">Create account <b>↗</b></a></article></div></section>
+<section id="about" class="landing-about"><div class="public-hero"><span class="landing-kicker">About DiaCare</span><h2 class="about-display-title">A friendly place to<br><em>understand your care.</em></h2><p>DiaCare is a private wellness companion that helps you record everyday health information, notice patterns, and learn diabetes basics in plain language.</p></div><div class="about-grid"><article><span>01</span><h2>How to use it</h2><p>Create an account, complete your profile once, then add glucose readings, meals, activity, or medication schedules when you need to. Your dashboard brings the important pieces together.</p></article><article><span>02</span><h2>What you can do</h2><p>View a current glucose trend, analyze meal photos, save nutrition history only when you choose, calculate BMI, track activity calories, and receive schedule reminders.</p></article><article><span>03</span><h2>Designed for clarity</h2><p>DiaCare uses simple cards, daily summaries, helpful alerts, and clear explanations so your records feel understandable rather than overwhelming.</p></article></div><div class="about-callout"><div><span class="landing-kicker">Ready when you are</span><h2>Start with one small record.</h2></div><a href="{{ route('register') }}" class="landing-cta landing-cta-large">Create your account <span>→</span></a></div></section><section id="details" class="landing-details"><div class="landing-details-heading"><span class="landing-kicker">How DiaCare helps</span><h2>Everything explained<br>without the clutter.</h2></div><div class="landing-accordion"><details open><summary><span>What can I track?</span><b>+</b></summary><p>Glucose readings, meal nutrition, activity duration and estimated calories, medication schedules, personal glucose targets, height, weight, and BMI.</p></details><details><summary><span>How does Meal Photo AI work?</span><b>+</b></summary><p>Choose a meal photo and DiaCare estimates calories, carbohydrates, protein, fat, and fiber. You review the result first. It is saved to Diet &amp; Meals only when you press Save to diet.</p></details><details><summary><span>How are my glucose trends built?</span><b>+</b></summary><p>The current trend groups Add reading values and glucose levels saved with meal analyses by day. If several values exist in one day, DiaCare shows that day’s average.</p></details><details><summary><span>Is DiaCare medical advice?</span><b>+</b></summary><p>No. DiaCare is a personal tracking and education companion. It does not diagnose conditions or replace your doctor, diabetes educator, or emergency care.</p></details></div></section>
+<section class="landing-split"><div><span class="landing-kicker">A simple beginning</span><h2>Start with one<br>small record.</h2></div><div class="steps"><div class="step"><b>01</b><div><h3>Sign up</h3><p>Create your private DiaCare account with your name, email, and password.</p></div></div><div class="step"><b>02</b><div><h3>Complete your profile</h3><p>Add your targets, height, weight, and other details once. Your data stays connected to your account.</p></div></div><div class="step"><b>03</b><div><h3>Build your picture</h3><p>Add readings, meals, activity, or medication whenever it fits your day.</p></div></div></div></section>
+</main><footer class="landing-footer"><div class="landing-brand"><span class="brand-mark">✦</span><span>DiaCare</span></div><span>Private wellness tracking for everyday clarity.</span><span>© {{ date('Y') }} DiaCare</span></footer>
+</body></html>

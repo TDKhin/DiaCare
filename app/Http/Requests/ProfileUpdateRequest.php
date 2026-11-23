@@ -17,24 +17,21 @@ class ProfileUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'min:2', 'max:255', 'regex:/^[\pL][\pL\s\'.-]*$/u'],
             'email' => [
                 'required',
                 'string',
                 'lowercase',
-                'email',
+                'email:rfc',
                 'max:255',
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
-            'glucose_target_min' => ['nullable', 'integer', 'between:40,300'],
-            'glucose_target_max' => ['nullable', 'integer', 'between:40,400', 'gte:glucose_target_min'],
+            'gender' => ['nullable', 'in:male,female'],
+            'diabetes_type' => ['nullable', Rule::in(array_keys(config('glucose.profiles')))],
+            'glucose_target_min' => ['prohibited'],
+            'glucose_target_max' => ['prohibited'],
             'height_cm' => ['nullable', 'numeric', 'between:50,250'],
             'weight_kg' => ['nullable', 'numeric', 'between:2,500'],
-            'emergency_contact_name' => ['nullable', 'string', 'max:255'],
-            'emergency_contact_phone' => ['nullable', 'string', 'max:40'],
-            'doctor_name' => ['nullable', 'string', 'max:255'],
-            'medical_notes' => ['nullable', 'string', 'max:5000'],
-            'health_goals' => ['nullable', 'string', 'max:5000'],
         ];
     }
 }

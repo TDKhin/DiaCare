@@ -27,8 +27,8 @@
             </div>
             <div class="card summary-card">
                 <div class="summary-card-top"><span class="summary-label">BMI</span><span class="summary-icon purple"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20V10M12 20V4M19 20v-7"/></svg></span></div>
-                <div class="summary-value">—</div>
-                <div class="summary-meta">Set up your profile to track</div>
+                <div class="summary-value">{{ $bmi ?? '—' }} @if($bmi)<small>BMI</small>@endif</div>
+                <div class="summary-meta">{{ $bmi ? 'Calculated from your height and weight' : 'Set up your profile to track' }}</div>
             </div>
             <div class="card summary-card">
                 <div class="summary-card-top"><span class="summary-label">Today’s activity</span><span class="summary-icon orange"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12h4l2-7 4 14 2-7h6"/></svg></span></div>
@@ -36,6 +36,8 @@
                 <div class="summary-meta">0% of your weekly goal</div>
             </div>
         </div>
+
+        <section class="card content-card" style="margin-top:17px;"><div class="list-header"><div><div class="card-title">Exercise & glucose</div><div class="card-subtitle" style="margin-top:4px;">Changes are calculated from actual before and after readings.</div></div><a href="{{ route('glucose') }}" class="text-[10px] font-bold text-blue-500 no-underline">View history</a></div><div class="table-list" style="margin-top:12px;">@forelse($exerciseImpacts as $activity)<div class="table-row"><span><span class="table-primary block">{{ $activity->activity }} · {{ $activity->duration_minutes }} min</span><span class="table-secondary block">{{ $activity->logged_at->format('M d · g:i A') }}</span></span><span class="table-secondary">{{ $activity->preGlucoseReading->value }} → {{ $activity->postGlucoseReading->value }} mg/dL</span><span class="table-value {{ $activity->postGlucoseReading->value <= $activity->preGlucoseReading->value ? 'good' : 'high' }}">{{ $activity->postGlucoseReading->value - $activity->preGlucoseReading->value > 0 ? '+' : '' }}{{ $activity->postGlucoseReading->value - $activity->preGlucoseReading->value }} mg/dL</span></div>@empty<div class="empty-state" style="min-height:94px;"><h3>No exercise comparisons yet</h3><p>Log exercise and an actual after-reading to see its measured change.</p></div>@endforelse</div></section>
 
         <div class="section-grid" style="margin-top: 17px;">
             <section class="card quick-card">
@@ -82,8 +84,7 @@
             <section class="card content-card">
                 <div class="list-header"><div><div class="card-title">Care reminders</div><div class="card-subtitle" style="margin-top: 4px;">A few things to keep in mind.</div></div><a href="{{ route('alerts') }}" class="text-[10px] font-bold text-blue-500 no-underline">See all</a></div>
                 <div class="alert-list" style="margin-top: 15px;">
-                    <div class="alert-item" style="padding: 11px;"><span class="alert-item-icon orange"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v10M12 17v1"/></svg></span><div><h3>Glucose check-in</h3><p>Keep logging readings around your meals.</p></div></div>
-                    <div class="alert-item" style="padding: 11px;"><span class="alert-item-icon blue"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 13h6"/></svg></span><div><h3>Evening medication</h3><p>Next dose is scheduled for 8:00 PM.</p></div></div>
+                    @foreach($dashboardAlerts as $alert)<div class="alert-item" style="padding: 11px;"><span class="alert-item-icon {{ $alert['color'] }}">{{ $alert['color'] === 'orange' ? '!' : ($alert['color'] === 'green' ? '✓' : '⌁') }}</span><div><h3>{{ $alert['title'] }}</h3><p>{{ $alert['message'] }}</p></div><time>{{ $alert['time'] }}</time></div>@endforeach
                 </div>
             </section>
         </div>

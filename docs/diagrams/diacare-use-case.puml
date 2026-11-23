@@ -1,0 +1,110 @@
+@startuml DiaCareUseCase
+left to right direction
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam actorStyle stickman
+skinparam usecase {
+  BackgroundColor #FFFDE7
+  BorderColor #6B7280
+  ArrowColor #52606D
+  FontColor #172B4D
+}
+skinparam rectangle {
+  BackgroundColor #FFFDE7
+  BorderColor #52606D
+  FontColor #172B4D
+}
+
+actor Guest
+actor "Registered User" as User
+actor Admin
+actor "Groq AI Provider" as AI
+
+rectangle "DiaCare Health Management System" {
+  usecase "Register account" as UC_Register
+  usecase "Log in / log out" as UC_Login
+  usecase "Browse health education" as UC_Learn
+  usecase "Take health quiz" as UC_Quiz
+
+  usecase "View personal dashboard" as UC_Dashboard
+  usecase "Track glucose" as UC_Glucose
+  usecase "View glucose trend" as UC_Trend
+  usecase "Receive glucose alerts" as UC_UserAlerts
+  usecase "Analyze meal photo" as UC_MealAI
+  usecase "View nutrition result" as UC_Nutrition
+  usecase "Enter pre-meal glucose" as UC_PreMeal
+  usecase "Estimate after-meal glucose" as UC_PostMeal
+  usecase "Save meal and glucose data" as UC_SaveMeal
+  usecase "Manage exercise records" as UC_Exercise
+  usecase "Manage medications" as UC_Medication
+  usecase "View health reports" as UC_Reports
+  usecase "Use AI chatbot" as UC_Chat
+  usecase "View / clear chat history" as UC_ChatHistory
+  usecase "Manage personal profile" as UC_Profile
+
+  usecase "View admin dashboard" as A_Dashboard
+  usecase "Search and filter users" as A_SearchUsers
+  usecase "Promote user to admin" as A_Promote
+  usecase "Protect admin roles" as A_Protect
+  usecase "Manage food and nutrition" as A_Nutrition
+  usecase "Manage exercise and medication" as A_ExerciseMed
+  usecase "Manage system reports" as A_Reports
+  usecase "Manage out-of-range alerts" as A_Alerts
+
+  usecase "Generate nutrition estimate" as AI_Nutrition
+  usecase "Generate chatbot response" as AI_Chat
+}
+
+Guest --> UC_Register
+Guest --> UC_Login
+Guest --> UC_Learn
+Guest --> UC_Quiz
+
+User --> UC_Login
+User --> UC_Dashboard
+User --> UC_Glucose
+User --> UC_Trend
+User --> UC_UserAlerts
+User --> UC_MealAI
+User --> UC_Exercise
+User --> UC_Medication
+User --> UC_Reports
+User --> UC_Chat
+User --> UC_Profile
+
+Admin --> UC_Login
+Admin --> A_Dashboard
+Admin --> A_SearchUsers
+Admin --> A_Nutrition
+Admin --> A_ExerciseMed
+Admin --> A_Reports
+Admin --> A_Alerts
+
+UC_Glucose .> UC_Trend : <<include>>
+UC_Glucose .> UC_UserAlerts : <<include>>
+UC_MealAI .> AI_Nutrition : <<include>>
+UC_MealAI .> UC_Nutrition : <<include>>
+UC_SaveMeal .> UC_PreMeal : <<include>>
+UC_SaveMeal .> UC_PostMeal : <<include>>
+UC_MealAI .> UC_SaveMeal : <<extend>>
+UC_PostMeal .> UC_Nutrition : <<include>>
+UC_Chat .> AI_Chat : <<include>>
+UC_ChatHistory .> UC_Chat : <<extend>>
+UC_Chat --> UC_ChatHistory
+A_SearchUsers .> A_Promote : <<extend>>
+A_Protect .> A_Promote : <<include>>
+
+AI --> AI_Nutrition
+AI --> AI_Chat
+
+note right of A_Protect
+Admin accounts cannot be changed
+back to normal User roles.
+Only normal users can be promoted.
+end note
+
+note bottom of UC_PostMeal
+Estimated value only; not a measured
+reading and not medical advice.
+end note
+@enduml

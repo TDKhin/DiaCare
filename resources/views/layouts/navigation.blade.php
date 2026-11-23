@@ -1,6 +1,6 @@
 @php
     $initials = collect(explode(' ', trim(Auth::user()->name)))->filter()->map(fn ($part) => strtoupper(substr($part, 0, 1)))->take(2)->implode('');
-    $navGroups = [
+    $navGroups = Auth::user()->isAdmin() ? [] : [
         'Track' => [
             ['label' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'dashboard'],
             ['label' => 'Glucose', 'route' => 'glucose', 'icon' => 'glucose'],
@@ -18,12 +18,15 @@
 @endphp
 
 <aside class="dashboard-sidebar" :class="{ 'is-open': sidebarOpen }" @click.outside="sidebarOpen = false">
+    <div class="sidebar-brand-row">
     <a href="{{ route('dashboard') }}" class="brand-lockup no-underline">
         <span class="brand-mark" aria-hidden="true">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.35-7-10.1A4.1 4.1 0 0 1 9.1 7c1.3 0 2.35.65 2.9 1.53A3.4 3.4 0 0 1 14.9 7 4.1 4.1 0 0 1 19 10.9C19 16.65 12 21 12 21Z"/><path d="M12 9v5M9.5 11.5h5"/></svg>
         </span>
         <span><span class="brand-name block">Diabetes Care</span><span class="brand-subtitle block">Wellness companion</span></span>
     </a>
+    <x-theme-toggle />
+    </div>
 
     @foreach ($navGroups as $group => $links)
         <div class="sidebar-section-label">{{ $group }}</div>
@@ -67,13 +70,31 @@
         </nav>
     @endforeach
 
-    <div class="sidebar-account">
-        <span class="avatar">{{ $initials ?: 'DC' }}</span>
+    @if (Auth::user()->isAdmin())
+        <div class="sidebar-section-label">Admin</div>
+        <nav class="sidebar-nav" aria-label="Admin navigation">
+            <a href="{{ route('admin.dashboard') }}" class="sidebar-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" @click="sidebarOpen = false">
+                <span class="sidebar-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>
+                <span>Admin dashboard</span>
+            </a>
+            <a href="{{ route('admin.users.index') }}" class="sidebar-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}" @click="sidebarOpen = false">
+                <span class="sidebar-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+                <span>User management</span>
+            </a>
+            <a href="{{ route('admin.nutrition') }}" class="sidebar-link {{ request()->routeIs('admin.nutrition') ? 'active' : '' }}" @click="sidebarOpen = false"><span class="sidebar-icon">F</span><span>Food &amp; nutrition</span></a>
+            <a href="{{ route('admin.activity-medication') }}" class="sidebar-link {{ request()->routeIs('admin.activity-medication') ? 'active' : '' }}" @click="sidebarOpen = false"><span class="sidebar-icon">E</span><span>Exercise &amp; medication</span></a>
+            <a href="{{ route('admin.reports') }}" class="sidebar-link {{ request()->routeIs('admin.reports') ? 'active' : '' }}" @click="sidebarOpen = false"><span class="sidebar-icon">R</span><span>Report management</span></a>
+            <a href="{{ route('admin.alerts') }}" class="sidebar-link {{ request()->routeIs('admin.alerts') ? 'active' : '' }}" @click="sidebarOpen = false"><span class="sidebar-icon">!</span><span>Alert management</span></a>
+        </nav>
+    @endif
+
+    <a href="{{ route(Auth::user()->isAdmin() ? 'admin.dashboard' : 'profile.edit') }}" class="sidebar-account no-underline" title="Open account">
+        @if(Auth::user()->profile_photo_path)<img class="avatar avatar-image" src="{{ asset('storage/'.Auth::user()->profile_photo_path) }}" alt="{{ Auth::user()->name }}">@else<span class="avatar">{{ $initials ?: 'DC' }}</span>@endif
         <span class="min-w-0 flex-1">
             <span class="account-name block">{{ Auth::user()->name }}</span>
             <span class="account-email block">{{ Auth::user()->email }}</span>
         </span>
-    </div>
+    </a>
     <form method="POST" action="{{ route('logout') }}">
         @csrf
         <button type="submit" class="logout-link w-full border-0 bg-transparent text-left">

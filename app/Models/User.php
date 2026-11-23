@@ -22,16 +22,15 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'profile_photo_path',
+        'role',
+        'gender',
+        'diabetes_type',
         'password',
         'glucose_target_min',
         'glucose_target_max',
         'height_cm',
         'weight_kg',
-        'emergency_contact_name',
-        'emergency_contact_phone',
-        'doctor_name',
-        'medical_notes',
-        'health_goals',
     ];
 
     /**
@@ -54,14 +53,34 @@ class User extends Authenticatable
         return $this->hasMany(GlucoseReading::class);
     }
 
+    public function glucosePhotoAnalyses(): HasMany
+    {
+        return $this->hasMany(GlucosePhotoAnalysis::class);
+    }
+
     public function mealPhotos(): HasMany
     {
         return $this->hasMany(MealPhoto::class);
     }
 
+    public function activityLogs(): HasMany
+    {
+        return $this->hasMany(ActivityLog::class);
+    }
+
+    public function medications(): HasMany
+    {
+        return $this->hasMany(Medication::class);
+    }
+
     public function chatMessages(): HasMany
     {
         return $this->hasMany(ChatMessage::class);
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
     }
 
     protected function casts(): array

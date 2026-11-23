@@ -5,11 +5,12 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <title>{{ $title ?? 'DiaCare' }}</title>
+        <x-theme-script />
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800&display=swap" rel="stylesheet" />
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body>
+    <body data-authenticated="true">
         <div x-data="diaCareAssistant()" x-init="init()" class="min-h-screen md:flex">
             @include('layouts.navigation')
 
@@ -21,10 +22,10 @@
                         </span>
                         <span class="brand-name">Diabetes Care</span>
                     </a>
-                    <button type="button" class="mobile-menu-button" @click="sidebarOpen = !sidebarOpen" aria-label="Toggle navigation">
+                    <div class="mobile-topbar-actions"><x-theme-toggle /><button type="button" class="mobile-menu-button" @click="sidebarOpen = !sidebarOpen" aria-label="Toggle navigation">
                         <svg x-show="!sidebarOpen" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
                         <svg x-show="sidebarOpen" x-cloak width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg>
-                    </button>
+                    </button></div>
                 </div>
 
                 <main>
@@ -36,10 +37,13 @@
             <aside x-show="assistantOpen" x-cloak x-transition class="assistant-panel" aria-label="DiaCare assistant" @keydown.escape.window="assistantOpen = false">
                 <header class="assistant-header">
                     <div class="assistant-title"><span class="assistant-avatar">✦</span><div><strong>DiaCare Assistant</strong><span>Wellness guidance</span></div></div>
-                    <button type="button" class="icon-button" @click="assistantOpen = false" aria-label="Close assistant">×</button>
+                    <div class="flex items-center gap-2">
+                        <button type="button" class="secondary-button !px-3 !py-1.5 !text-xs" @click.prevent="clearHistory()" :disabled="sending">Clear history</button>
+                        <button type="button" class="icon-button" @click="assistantOpen = false" aria-label="Close assistant">×</button>
+                    </div>
                 </header>
                 <div class="assistant-messages" x-ref="assistantMessages">
-                    <template x-if="messages.length === 0"><div class="assistant-welcome"><span class="assistant-welcome-icon">✦</span><strong>How can I help today?</strong><p>Ask about tracking your routine, preparing for a visit, or understanding your logged wellness data.</p></div></template>
+                    <template x-if="messages.length === 0"><div class="assistant-welcome"><span class="assistant-welcome-icon">✦</span><strong>How can I help today?</strong><p>Ask about glucose patterns, food tracking, movement, or preparing for a clinician visit.</p><div class="assistant-prompts"><button type="button" @click="draft = 'What should I track before my next diabetes appointment?'">Prepare for an appointment</button><button type="button" @click="draft = 'How can I make my glucose log more useful?'">Improve my glucose log</button><button type="button" @click="draft = 'What are signs that need urgent medical help?'">Learn urgent warning signs</button></div></div></template>
                     <template x-for="message in messages" :key="message.id || message.created_at + message.content"><div class="assistant-message" :class="message.role === 'user' ? 'user' : 'assistant'"><span x-text="message.content"></span></div></template>
                     <div x-show="sending" class="assistant-message assistant"><span class="assistant-typing">Thinking…</span></div>
                 </div>
@@ -47,7 +51,7 @@
                     <input x-model="draft" type="text" maxlength="2000" placeholder="Ask DiaCare Assistant…" aria-label="Message assistant">
                     <button type="submit" class="primary-button" :disabled="sending || !draft.trim()" aria-label="Send message"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m4 4 16 8-16 8 3-8-3-8Z"/><path d="M7 12h13"/></svg></button>
                 </form>
-                <p class="assistant-disclaimer">General wellness information only. This assistant cannot diagnose or change medication.</p>
+                <p class="assistant-disclaimer">Educational wellness information only. Verify readings on your device and contact a clinician for personal decisions or urgent symptoms.</p>
             </aside>
         </div>
     </body>

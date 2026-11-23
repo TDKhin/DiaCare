@@ -1,8 +1,51 @@
 <x-app-layout>
-    <div class="page-container">
-        <div class="page-heading"><div><p class="eyebrow">More</p><h1>Alerts</h1><p>Get helpful reminders and updates about your health routine.</p></div><button type="button" class="secondary-button"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>Notification settings</button></div>
-        <section class="card content-card" style="margin-top: 0;"><div class="list-header"><div><div class="card-title">Recent alerts</div><div class="card-subtitle" style="margin-top: 4px;">Stay informed without losing focus on your day.</div></div><span class="status-badge blue" style="background:#eef5ff;color:#367fe1;">3 new</span></div><div class="alert-list" style="margin-top: 17px;">@foreach ($alerts as $alert)<div class="alert-item"><span class="alert-item-icon {{ $alert['color'] }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">@if($alert['color'] === 'orange')<path d="M12 3v10M12 17v1"/><circle cx="12" cy="20" r="1"/>@elseif($alert['color'] === 'blue')<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 13h6"/>@else<path d="M3 12h4l2-7 4 14 2-7h6"/>@endif</svg></span><div><h3>{{ $alert['title'] }}</h3><p>{{ $alert['message'] }}</p></div><time>{{ $alert['time'] }}</time><button class="icon-button" aria-label="Dismiss alert"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>@endforeach</div></section>
-        <p class="card-subtitle" style="line-height:1.6;margin:17px 2px 0;">DiaCare reminders are designed to support your routine. They do not replace medical advice or emergency care.</p>
+    <div class="page-container alerts-page" x-data="diaCareAlertSound(@js($alerts->where('read', false)->pluck('key')->values()))" x-init="init()">
+        <div class="page-heading">
+            <div><p class="eyebrow">Your care center</p><h1>Alerts</h1><p>Important updates and reminders based on your recent health records.</p></div>
+            <div class="alerts-summary"><span class="alerts-unread-dot"></span><strong>{{ $unreadCount }}</strong><span>unread</span></div>
+        </div>
+
+        @if (session('status') === 'alert-read')
+            <div class="alert-success">Alert marked as read.</div>
+        @endif
+
+        <section class="alerts-toolbar card">
+            <div><div class="card-title">Alert center</div><div class="card-subtitle" style="margin-top:4px;">Review recent updates and keep your care routine on track.</div></div>
+            <button type="button" class="secondary-button" @click="toggle()" :aria-pressed="enabled.toString()" x-text="enabled ? 'Alert sound: On' : 'Enable alert sound'"></button>
+            <nav class="alert-filters" aria-label="Alert filters">
+                <a href="{{ route('alerts', ['filter' => 'all']) }}" class="{{ $filter === 'all' ? 'active' : '' }}">All <span>{{ $totalCount }}</span></a>
+                <a href="{{ route('alerts', ['filter' => 'unread']) }}" class="{{ $filter === 'unread' ? 'active' : '' }}">Unread <span>{{ $unreadCount }}</span></a>
+                <a href="{{ route('alerts', ['filter' => 'important']) }}" class="{{ $filter === 'important' ? 'active' : '' }}">Important</a>
+            </nav>
+        </section>
+
+        <section class="alert-center-list">
+            @forelse ($alerts as $alert)
+                @php($type = $alert['type'] ?? 'information')
+                <article class="alert-center-card {{ $alert['read'] ? 'is-read' : 'is-unread' }} alert-type-{{ $type }}">
+                    <div class="alert-type-icon" aria-hidden="true">
+                        @if ($type === 'critical')<svg viewBox="0 0 24 24"><path d="M12 3 2.8 20h18.4L12 3Z"/><path d="M12 9v5M12 17h.01"/></svg>
+                        @elseif ($type === 'warning')<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16h.01"/></svg>
+                        @elseif ($type === 'reminder')<svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM10 21h4"/></svg>
+                        @else<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>@endif
+                    </div>
+                    <div class="alert-center-content">
+                        <div class="alert-center-top"><span class="alert-type-label">{{ ucfirst($type) }}</span><time datetime="{{ $alert['date'] }}">{{ $alert['date'] }}</time></div>
+                        <h2>{{ $alert['title'] }}</h2><p>{{ $alert['message'] }}</p>
+                    </div>
+                    <div class="alert-center-action">
+                        @if ($alert['read'])<span class="read-state"><span>✓</span> Read</span>
+                        @else
+                            <span class="unread-state"><span></span> Unread</span>
+                            <form method="POST" action="{{ route('alerts.read', $alert['key']) }}">@csrf<button type="submit" class="secondary-button">Mark as read</button></form>
+                        @endif
+                    </div>
+                </article>
+            @empty
+                <div class="card empty-state alerts-empty"><span class="empty-state-icon">✓</span><h3>No alerts in this view</h3><p>Try another filter or continue recording your health data.</p></div>
+            @endforelse
+        </section>
+        <p class="alerts-disclaimer">DiaCare reminders support your routine and do not replace medical advice or emergency care.</p>
     </div>
-    <button type="button" class="chat-fab" @click="$dispatch('open-assistant')" aria-label="Open DiaCare assistant"><span class="chat-dot"></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11.5a7.5 7.5 0 0 1-8 7.5 8.8 8.8 0 0 1-3.3-.63L4 20l1.64-3.62A7.4 7.4 0 0 1 4.5 12 7.5 7.5 0 0 1 12 4.5h.5A7.5 7.5 0 0 1 20 11.5Z"/><path d="M9 12h.01M12 12h.01M15 12h.01"/></svg></button>
+    <button type="button" class="chat-fab" @click="$dispatch('open-assistant')" aria-label="Open DiaCare assistant"><span class="chat-dot"></span>✦</button>
 </x-app-layout>
